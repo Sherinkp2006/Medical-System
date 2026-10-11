@@ -1,0 +1,234 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Pharmacy Management System{% endblock %}</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    {% block extra_css %}{% endblock %}
+
+    <style>
+        :root {
+            --bg-base: #eefdf4;                             /* Light medical mint canvas base */
+            --med-primary: #044e39;                         /* Rich clinical emerald for headers */
+            --med-accent: #00cc88;                          /* Vibrant mint green for highlights */
+            --text-slate: #0b261f;                          /* High-visibility charcoal-green for core text */
+            --text-muted: #475569;                          /* Secondary slate gray text */
+
+            /* HIGH VISIBILITY GLASS PATTERN DEFINITIONS */
+            --glass-sheet: rgba(255, 255, 255, 0.88);      /* Increased opacity for maximum block definition */
+            --glass-sheet-hover: rgba(255, 255, 255, 0.96);/* Crisp reflective focus state */
+            --glass-border: rgba(4, 78, 57, 0.16);         /* Tinted structural perimeter line */
+            --glass-shadow: rgba(4, 78, 57, 0.12);         /* Pronounced drop shadow depth */
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-slate);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 1;
+            overflow-x: hidden;
+        }
+
+        /* Background Visual Blobs */
+        body::before {
+            content: '';
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            top: -150px;
+            left: -150px;
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.35) 0%, rgba(52, 211, 153, 0.1) 60%, rgba(0,0,0,0) 100%);
+            border-radius: 50%;
+            z-index: -2;
+        }
+        body::after {
+            content: '';
+            position: fixed;
+            width: 500px;
+            height: 500px;
+            bottom: -100px;
+            right: -100px;
+            background: radial-gradient(circle, rgba(0, 204, 136, 0.25) 0%, rgba(167, 243, 208, 0.15) 65%, rgba(0,0,0,0) 100%);
+            border-radius: 50%;
+            z-index: -2;
+        }
+
+        .bg-glass-blob {
+            position: fixed;
+            width: 400px;
+            height: 400px;
+            top: 40%;
+            left: 45%;
+            background: radial-gradient(circle, rgba(4, 78, 57, 0.06) 0%, rgba(0,0,0,0) 70%);
+            border-radius: 50%;
+            z-index: -2;
+        }
+
+        main {
+            flex: 1;
+            padding: 40px 20px;
+            z-index: 2;
+        }
+
+        /* CRISP GLASS PANEL STRUCTURE */
+        .glass-panel {
+            background: var(--glass-sheet);
+            backdrop-filter: blur(16px) saturate(120%);
+            -webkit-backdrop-filter: blur(16px) saturate(120%);
+            border: 1px solid var(--glass-border);
+            border-radius: 18px;
+            box-shadow: 0 10px 30px -5px var(--glass-shadow), inset 0 1px 2px 0 rgba(255, 255, 255, 0.6);
+            transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.25s ease, box-shadow 0.25s ease;
+        }
+        .glass-panel:hover {
+            transform: translateY(-2px);
+            background-color: var(--glass-sheet-hover);
+            box-shadow: 0 16px 35px -8px rgba(4, 78, 57, 0.18);
+        }
+
+        /* Solid Visibility Form Inputs */
+        .form-control, .form-select {
+            background: #ffffff !important;
+            border: 1px solid #bbf7d0 !important;
+            color: var(--text-slate) !important;
+            border-radius: 10px !important;
+            font-weight: 500;
+            transition: all 0.2s ease !important;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: var(--med-accent) !important;
+            box-shadow: 0 0 0 4px rgba(0, 204, 136, 0.15) !important;
+            outline: none;
+        }
+
+        /* High Definition Navigation Bar Style */
+        .navbar-glass {
+            background: var(--med-primary) !important;
+            border-bottom: 2px solid rgba(16, 185, 129, 0.3);
+            padding: 14px 0;
+            box-shadow: 0 6px 25px rgba(4, 78, 57, 0.15);
+        }
+        .navbar-brand {
+            font-weight: 700;
+            color: #ffffff !important;
+        }
+
+        .nav-link {
+            color: rgba(255, 255, 255, 0.88) !important;
+            font-weight: 500;
+            border-radius: 8px;
+            padding: 8px 16px !important;
+            transition: all 0.2s ease;
+        }
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.12);
+            color: #ffffff !important;
+        }
+
+        .btn-glass-success {
+            background: var(--med-primary);
+            border: 1px solid var(--med-primary);
+            color: #ffffff;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(4, 78, 57, 0.15);
+        }
+        .btn-glass-success:hover {
+            background: #033b2b;
+            color: #ffffff;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(4, 78, 57, 0.25);
+        }
+
+        .btn-glass-secondary {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            color: var(--text-slate);
+            border-radius: 10px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        .btn-glass-secondary:hover {
+            background: #f8fafc;
+            border-color: var(--med-primary);
+            color: var(--med-primary);
+        }
+
+        /* UPDATED: Fully Frosted Light-Green Glass Footer Style */
+        footer {
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(16px) saturate(120%);
+            -webkit-backdrop-filter: blur(16px) saturate(120%);
+            border-top: 1px solid var(--glass-border);
+            padding: 20px;
+            text-align: center;
+            color: var(--text-muted);
+            margin-top: auto;
+            box-shadow: 0 -5px 25px rgba(4, 78, 57, 0.04);
+            z-index: 2;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-glass-blob"></div>
+
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-glass">
+        <div class="container-fluid container">
+            <a class="navbar-brand" href="{% url 'pharmacy:medicine_list' %}">🏥 Pharmacy Management</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    {% if user.is_authenticated %}
+                        <li class="nav-item"><a class="nav-link" href="{% url 'pharmacy:medicine_list' %}">📋 Medicine List</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'pharmacy:medicine_add' %}">➕ Add Medicine</a></li>
+                        {% if user.is_staff %}
+                            <li class="nav-item"><a class="nav-link" href="{% url 'pharmacy:admin_dashboard' %}">⚙️ Admin</a></li>
+                        {% endif %}
+                        <li class="nav-item px-2">
+                            <span class="badge bg-white text-dark border p-2 fw-semibold">👤 {{ user.username }}</span>
+                        </li>
+                        <li class="nav-item"><a class="nav-link text-danger" href="{% url 'pharmacy:logout' %}">🚪 Logout</a></li>
+                    {% else %}
+                        <li class="nav-item"><a class="nav-link" href="{% url 'pharmacy:register' %}">📝 Register</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'pharmacy:login' %}">🔐 Login</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-success border-0 glass-panel text-dark alert-dismissible fade show mt-3 shadow-sm" role="alert">
+                    ✨ {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% block content %}
+            <p>Welcome to the Pharmacy Management System.</p>
+        {% endblock %}
+    </main>
+
+    <footer>
+        <p class="mb-0">&copy; 2026 Pharmacy Management System. All rights reserved.</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

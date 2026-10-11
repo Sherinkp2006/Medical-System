@@ -1,0 +1,35 @@
+{% extends "pharmacy/base.html" %}
+
+{% block title %}Confirm Delete - Pharmacy Management{% endblock %}
+
+{% block content %}
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="glass-panel p-0 overflow-hidden border border-danger border-opacity-30" style="box-shadow: 0 12px 32px rgba(220, 53, 69, 0.08);">
+                <div class="p-4 bg-danger bg-opacity-10" style="border-bottom: 1px solid rgba(220, 53, 69, 0.15);">
+                    <h3 class="mb-0 text-danger fw-bold">🗑️ Confirm Deletion</h3>
+                </div>
+                <div class="p-4">
+                    <div class="alert alert-danger bg-danger bg-opacity-10 border-danger border-opacity-20 text-danger mb-4">
+                        <strong>⚠️ Critical Warning:</strong> Are you sure you want to permanently delete this record from active inventory?
+                    </div>
+
+                    <div class="p-3 rounded-3 mb-4" style="background: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.6);">
+                        <p class="mb-2 text-muted">Medicine Name: <span class="fw-bold fs-5 d-block" style="color: var(--med-primary);">{{ medicine.medicine_name }}</span></p>
+                        <p class="mb-2 text-muted">Manufacturer: <span class="d-block text-dark fw-semibold">{{ medicine.manufacturer }}</span></p>
+                        <p class="mb-0 text-muted">Current Stock: <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 mt-1 fs-6">{{ medicine.stock_available }} units</span></p>
+                    </div>
+
+                    <p class="text-danger text-center mb-0 fw-semibold" style="opacity: 0.85;">This operational deletion routine is permanent.</p>
+                </div>
+                <div class="p-4 bg-white bg-opacity-20 d-flex gap-2 justify-content-end" style="border-top: 1px solid rgba(255,255,255,0.3);">
+                    <form method="post" class="w-100 d-flex justify-content-end gap-2">
+                        {% csrf_token %}
+                        <a href="{% url 'pharmacy:medicine_list' %}" class="btn btn-glass-secondary px-4">❌ Cancel</a>
+                        <button type="submit" class="btn btn-danger px-4 border border-danger text-white fw-bold shadow-sm" style="border-radius:12px;">🗑️ Yes, Delete Medicine</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

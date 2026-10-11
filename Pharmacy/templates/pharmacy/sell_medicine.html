@@ -1,0 +1,120 @@
+{% extends "pharmacy/base.html" %}
+
+{% block title %}Sell Medicine - Pharmacy Management{% endblock %}
+
+{% block extra_css %}
+<style>
+    .modal-glass-backdrop {
+        display: none;
+        position: fixed;
+        z-index: 1050;
+        left: 0; top: 0; right:0; bottom:0;
+        background: rgba(4, 30, 22, 0.4);
+        backdrop-filter: blur(12px);
+        align-items: center;
+        justify-content: center;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+    <h1 class="mb-4 fw-bold" style="color: var(--med-primary);">Sell Medicine</h1>
+
+    <div class="glass-panel col-lg-8 p-4">
+        <form method="post" id="sell-form">
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+
+            <div class="mb-4">
+                <label for="id_medicine" class="form-label fw-bold" style="color: var(--med-primary);">Medicine Selection</label>
+                <select name="medicine" id="id_medicine" class="form-select">
+                    {% for m in medicines %}
+                        <option value="{{ m.pk }}" data-medicine-name="{{ m.medicine_name }}" data-unit-price="{{ m.unit_price }}" data-stock="{{ m.stock_available }}" {% if m.pk == selected.pk %}selected{% endif %}>
+                            {{ m.medicine_name }} ({{ m.manufacturer }}) - Stock: {{ m.stock_available }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="mb-4">
+                <label for="id_quantity" class="form-label fw-bold" style="color: var(--med-primary);">Quantity</label>
+                <select name="quantity" id="id_quantity" class="form-select"></select>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="button" id="bill-medicine" class="btn btn-glass-success px-4">🧾 Bill Medicine</button>
+                <a href="{% url 'pharmacy:medicine_list' %}" class="btn btn-glass-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Glass Overlay Popup UI Component -->
+    <div id="total-modal" class="modal-glass-backdrop">
+        <div class="glass-panel p-0 mx-3" style="width: 100%; max-width: 500px; background: rgba(255,255,255,0.8);">
+            <div class="p-4 d-flex justify-content-between align-items-center" style="border-bottom: 1px solid rgba(255,255,255,0.5); background: rgba(0, 204, 136, 0.1);">
+                <h5 class="mb-0 fw-bold" style="color: var(--med-primary);">🧾 Billing Summary</h5>
+                <button type="button" class="btn-close" id="close-modal"></button>
+            </div>
+            <div class="p-4">
+                <div class="mb-3">
+                    <label class="text-muted small d-block mb-1">Medicine Item</label>
+                    <strong id="modal-med-name" class="fs-4" style="color: var(--med-primary);"></strong>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <label class="text-muted small d-block mb-1">Unit Price</label>
+                        <span id="modal-rate" class="fw-bold fs-5" style="color: var(--text-slate);"></span>
+                    </div>
+                    <div class="col-6">
+                        <label class="text-muted small d-block mb-1">Quantity Ordered</label>
+                        <span id="modal-qty" class="badge bg-white text-dark border p-2" style="border-color: rgba(4,78,57,0.15) !important;"></span>
+                    </div>
+                </div>
+                <hr style="border-color: rgba(4,78,57,0.15);">
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <h4 class="mb-0 fw-bold" style="color: var(--med-primary);">Total Payable:</h4>
+                    <h3 id="total-value" class="mb-0 fw-bold" style="color: var(--med-primary);">₹0.00</h3>
+                </div>
+            </div>
+            <div class="p-3 bg-light bg-opacity-50 d-flex justify-content-end gap-2" style="border-top: 1px solid rgba(0,0,0,0.05);">
+                <button type="button" id="close-modal-btn" class="btn btn-glass-secondary">Close</button>
+                <button type="submit" form="sell-form" class="btn btn-glass-success px-4">Confirm Transaction</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function formatCurrency(v) { return parseFloat(v).toFixed(2); }
+        function populateQuantityOptions(stock) {
+            const sel = document.getElementById('id_quantity');
+            sel.innerHTML = '';
+            const limit = Math.min(Math.max(0, Math.floor(Number(stock))), 100);
+            for (let i = 1; i <= limit; i++) {
+                let opt = document.createElement('option'); opt.value = i; opt.textContent = i; sel.appendChild(opt);
+            }
+            if (limit === 0) {
+                let opt = document.createElement('option'); opt.value = 0; opt.textContent = '0 (out of stock)'; sel.appendChild(opt);
+            }
+        }
+        function getSelectedMedicineData() {
+            const medSel = document.getElementById('id_medicine');
+            const opt = medSel.options[medSel.selectedIndex];
+            return { name: opt.getAttribute('data-medicine-name'), unit_price: opt.getAttribute('data-unit-price'), stock: opt.getAttribute('data-stock') };
+        }
+        document.addEventListener('DOMContentLoaded', function(){
+            populateQuantityOptions(getSelectedMedicineData().stock);
+            document.getElementById('id_medicine').addEventListener('change', function(){ populateQuantityOptions(getSelectedMedicineData().stock); });
+            document.getElementById('bill-medicine').addEventListener('click', function(){
+                const data = getSelectedMedicineData(); const qty = document.getElementById('id_quantity').value;
+                document.getElementById('modal-med-name').textContent = data.name;
+                document.getElementById('modal-rate').textContent = '₹' + formatCurrency(data.unit_price);
+                document.getElementById('modal-qty').textContent = qty + ' units';
+                document.getElementById('total-value').textContent = '₹' + formatCurrency(Number(data.unit_price) * Number(qty || 0));
+                document.getElementById('total-modal').style.display = 'flex';
+            });
+            const hide = () => { document.getElementById('total-modal').style.display = 'none'; };
+            document.getElementById('close-modal').addEventListener('click', hide);
+            document.getElementById('close-modal-btn').addEventListener('click', hide);
+        });
+    </script>
+{% endblock %}

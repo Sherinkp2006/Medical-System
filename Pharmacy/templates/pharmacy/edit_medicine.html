@@ -1,0 +1,76 @@
+{% extends "pharmacy/base.html" %}
+
+{% block title %}Manage Medicine - Pharmacy Management{% endblock %}
+
+{% block content %}
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="glass-panel p-0 overflow-hidden">
+                <div class="p-4" style="border-bottom: 1px solid rgba(255,255,255,0.4); background: rgba(4, 78, 57, 0.05);">
+                    <h3 class="mb-0 fw-bold" style="color: var(--med-primary);">📝 Medicine Update Form</h3>
+                </div>
+                <div class="p-4">
+                    <form method="post" class="needs-validation" novalidate id="medicine-form">
+                        {% csrf_token %}
+                        {{ form.non_field_errors }}
+
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <label class="form-label fw-bold" style="color: var(--med-primary);">{{ form.medicine_name.label }}</label>
+                                {{ form.medicine_name }}
+                                {% if form.medicine_name.errors %}
+                                    <div class="text-danger small mt-1">{% for error in form.medicine_name.errors %}{{ error }}{% endfor %}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-4">
+                                <label class="form-label fw-bold" style="color: var(--med-primary);">{{ form.manufacturer.label }}</label>
+                                {{ form.manufacturer }}
+                                {% if form.manufacturer.errors %}
+                                    <div class="text-danger small mt-1">{% for error in form.manufacturer.errors %}{{ error }}{% endfor %}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <label class="form-label fw-bold" style="color: var(--med-primary);">{{ form.manufacture_date.label }}</label>
+                                {{ form.manufacture_date }}
+                                {% if form.manufacture_date.errors %}
+                                    <div class="text-danger small mt-1">{% for error in form.manufacture_date.errors %}{{ error }}{% endfor %}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-4">
+                                <label class="form-label fw-bold" style="color: var(--med-primary);">{{ form.expiry_date.label }}</label>
+                                {{ form.expiry_date }}
+                                {% if form.expiry_date.errors %}
+                                    <div class="text-danger small mt-1">{% for error in form.expiry_date.errors %}{{ error }}{% endfor %}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <label class="form-label fw-bold" style="color: var(--med-primary);">{{ form.unit_price.label }}</label>
+                                {{ form.unit_price }}
+                                {% if form.unit_price.errors %}
+                                    <div class="text-danger small mt-1">{% for error in form.unit_price.errors %}{{ error }}{% endfor %}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-4">
+                                <label class="form-label fw-bold" style="color: var(--med-primary);">{{ form.stock_available.label }}</label>
+                                {{ form.stock_available }}
+                                {% if form.stock_available.errors %}
+                                    <div class="text-danger small mt-1">{% for error in form.stock_available.errors %}{{ error }}{% endfor %}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="p-4 bg-white bg-opacity-20 d-flex gap-2 justify-content-end" style="border-top: 1px solid rgba(255,255,255,0.3);">
+                    <a href="{% url 'pharmacy:medicine_list' %}" class="btn btn-glass-secondary px-4">❌ Cancel</a>
+                    <button type="submit" form="medicine-form" class="btn btn-glass-success px-4">💾 Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

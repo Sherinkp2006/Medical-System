@@ -1,0 +1,160 @@
+{% extends "pharmacy/base.html" %}
+
+{% block title %}Admin Dashboard - Pharmacy Management{% endblock %}
+
+{% block content %}
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <p class="text-uppercase small fw-bold mb-1" style="color: var(--med-primary); letter-spacing: .12em;">Staff workspace</p>
+            <h1 class="fw-bold mb-1" style="letter-spacing: -1px; color: var(--med-primary);">Admin dashboard</h1>
+            <p class="mb-0" style="color: var(--text-muted);">User accounts and pharmacy operations at a glance.</p>
+        </div>
+        <a class="btn btn-glass-secondary px-4" href="{% url 'pharmacy:medicine_list' %}">← Medicine inventory</a>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+            <div class="glass-panel p-4 h-100">
+                <p class="small text-uppercase fw-bold mb-2" style="color: var(--text-muted);">Total users</p>
+                <p class="fs-2 fw-bold mb-0" style="color: var(--med-primary);">{{ user_count }}</p>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="glass-panel p-4 h-100">
+                <p class="small text-uppercase fw-bold mb-2" style="color: var(--text-muted);">Active accounts</p>
+                <p class="fs-2 fw-bold mb-0 text-success">{{ active_user_count }}</p>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="glass-panel p-4 h-100">
+                <p class="small text-uppercase fw-bold mb-2" style="color: var(--text-muted);">Staff accounts</p>
+                <p class="fs-2 fw-bold mb-0" style="color: var(--text-slate);">{{ staff_user_count }}</p>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="glass-panel p-4 h-100">
+                <p class="small text-uppercase fw-bold mb-2" style="color: var(--text-muted);">Inventory value</p>
+                <p class="fs-2 fw-bold mb-0" style="color: var(--med-primary);">₹{{ inventory_value|floatformat:2 }}</p>
+                <span class="small" style="color: var(--text-muted);">{{ medicine_count }} medicine types</span>
+            </div>
+        </div>
+    </div>
+
+    <section class="glass-panel p-3 p-md-4 mb-4" aria-labelledby="users-heading">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+            <div>
+                <h2 id="users-heading" class="h4 fw-bold mb-1" style="color: var(--med-primary);">User accounts</h2>
+                <p class="small mb-0" style="color: var(--text-muted);">Account profile, access level, and activity.</p>
+            </div>
+            <form method="get" class="d-flex gap-2" role="search">
+                <label class="visually-hidden" for="user-search">Search users</label>
+                <input id="user-search" class="form-control" type="search" name="q" value="{{ search_query }}"
+                       placeholder="Name, username, or email" style="min-width: min(300px, 65vw);">
+                <button class="btn btn-glass-success" type="submit">Search</button>
+                {% if search_query %}
+                    <a class="btn btn-glass-secondary" href="{% url 'pharmacy:admin_dashboard' %}">Clear</a>
+                {% endif %}
+            </form>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0"
+                   style="--bs-table-bg: transparent; --bs-table-color: var(--text-slate); --bs-table-border-color: rgba(4, 78, 57, 0.08);">
+                <thead>
+                    <tr>
+                        <th scope="col">User</th>
+                        <th scope="col">Email</th>
+                        <th scope="col">Access</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Joined</th>
+                        <th scope="col">Last login</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for account in users %}
+                        <tr>
+                            <td>
+                                <strong>{{ account.get_full_name|default:account.username }}</strong>
+                                <div class="small" style="color: var(--text-muted);">@{{ account.username }}</div>
+                            </td>
+                            <td>{{ account.email|default:"—" }}</td>
+                            <td>
+                                {% if account.is_superuser %}
+                                    <span class="badge text-bg-danger">Superuser</span>
+                                {% elif account.is_staff %}
+                                    <span class="badge text-bg-primary">Staff</span>
+                                {% else %}
+                                    <span class="badge text-bg-light border text-dark">User</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if account.is_active %}
+                                    <span class="badge text-bg-success">Active</span>
+                                {% else %}
+                                    <span class="badge text-bg-secondary">Inactive</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ account.date_joined|date:"M d, Y" }}</td>
+                            <td>{{ account.last_login|date:"M d, Y · H:i"|default:"Never" }}</td>
+                            <td>
+                                {% if account.pk != user.pk and not account.is_superuser or account.pk != user.pk and superuser_count > 1 %}
+                                    <form method="post" action="{% url 'pharmacy:user_delete' account.pk %}"
+                                          onsubmit="return confirm('Delete the account for {{ account.username|escapejs }}? This cannot be undone.');">
+                                        {% csrf_token %}
+                                        <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
+                                    </form>
+                                {% elif account.pk == user.pk %}
+                                    <span class="small text-muted">Current account</span>
+                                {% else %}
+                                    <span class="small text-muted">Last superuser</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center py-5" style="color: var(--text-muted);">
+                                {% if search_query %}No accounts match “{{ search_query }}”.{% else %}No user accounts found.{% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="glass-panel p-3 p-md-4" aria-labelledby="inventory-heading">
+        <div class="mb-3">
+            <h2 id="inventory-heading" class="h4 fw-bold mb-1" style="color: var(--med-primary);">Inventory overview</h2>
+            <p class="small mb-0" style="color: var(--text-muted);">Stock levels and expiry dates across the pharmacy.</p>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0"
+                   style="--bs-table-bg: transparent; --bs-table-color: var(--text-slate); --bs-table-border-color: rgba(4, 78, 57, 0.08);">
+                <thead>
+                    <tr>
+                        <th scope="col">Medicine</th>
+                        <th scope="col">Manufacturer</th>
+                        <th scope="col">Stock</th>
+                        <th scope="col">Unit price</th>
+                        <th scope="col">Expiry date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for medicine in medicines %}
+                        <tr>
+                            <td class="fw-semibold">{{ medicine.medicine_name }}</td>
+                            <td>{{ medicine.manufacturer }}</td>
+                            <td>{{ medicine.stock_available }}</td>
+                            <td>₹{{ medicine.unit_price|floatformat:2 }}</td>
+                            <td>{{ medicine.expiry_date|date:"M d, Y" }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center py-4" style="color: var(--text-muted);">No medicines have been added yet.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+{% endblock %}

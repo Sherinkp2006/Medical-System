@@ -1,0 +1,154 @@
+{% extends "pharmacy/base.html" %}
+
+{% block title %}Medicine List - Pharmacy Management{% endblock %}
+
+{% block content %}
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <div>
+            <h1 class="mb-1 fw-bold" style="letter-spacing: -1px; color: var(--med-primary);">💊 Medicine Inventory</h1>
+            <p style="color: var(--text-muted); font-weight: 500;">Manage your pharmacy's medicine stock status natively.</p>
+        </div>
+        <a href="{% url 'pharmacy:medicine_add' %}" class="btn btn-glass-success btn-lg px-4 shadow-sm">
+            <span>➕ Add New Medicine</span>
+        </a>
+    </div>
+
+    {% if medicines %}
+        <div class="mb-4 position-relative">
+            <span class="position-absolute top-50 start-0 translate-middle-y ps-4 text-muted select-none" style="z-index: 5; font-size: 1.2rem;">🔍</span>
+            <input type="text" id="medicineSearch" autocomplete="off"
+                   placeholder="Search or filter records by medicine name or manufacturer instantly..."
+                   class="form-control form-control-lg ps-5 py-3 shadow-sm transition-all"
+                   style="background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(10px); border: 1px solid var(--glass-border); border-radius: 16px; color: var(--text-slate); font-weight: 500; font-size: 1.05rem;">
+        </div>
+
+        <div class="glass-panel p-4 mb-5 overflow-hidden">
+            <div class="table-responsive">
+                <table class="table align-middle mb-0" style="--bs-table-bg: transparent; --bs-table-color: var(--text-slate); --bs-table-border-color: rgba(4, 78, 57, 0.08); --bs-table-hover-bg: rgba(255, 255, 255, 0.5);">
+                    <thead>
+                        <tr style="border-bottom: 2px solid var(--med-primary); --bs-table-bg: transparent;">
+                            <th class="py-3" style="color: var(--med-primary); font-weight: 700;">#</th>
+                            <th class="py-3" style="color: var(--med-primary); font-weight: 700;">Medicine Name</th>
+                            <th class="py-3" style="color: var(--med-primary); font-weight: 700;">Manufacturer</th>
+                            <th class="py-3" style="color: var(--med-primary); font-weight: 700;">Mfg Date</th>
+                            <th class="py-3" style="color: var(--med-primary); font-weight: 700;">Expiry Date</th>
+                            <th class="py-3" style="color: var(--med-primary); font-weight: 700;">Unit Price</th>
+                            <th class="py-3" style="color: var(--med-primary); font-weight: 700;">Stock</th>
+                            <th class="py-3 text-end" style="color: var(--med-primary); font-weight: 700;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="medicineTableBody">
+                    {% for m in medicines %}
+                        <tr class="medicine-record-row" style="--bs-table-bg: transparent;">
+                            <td><span class="badge bg-white text-dark border fw-semibold" style="border-color: var(--glass-border) !important;">{{ forloop.counter }}</span></td>
+                            <td><strong class="fs-5 medicine-name-query" style="color: var(--med-primary);">{{ m.medicine_name }}</strong></td>
+                            <td class="medicine-manufacturer-query" style="color: var(--text-slate); font-weight: 500;">{{ m.manufacturer }}</td>
+                            <td style="color: var(--text-muted);">{{ m.manufacture_date|date:"M d, Y" }}</td>
+                            <td>
+                                {% now "Y-m-d" as today %}
+                                {% if m.expiry_date|date:"Y-m-d" < today %}
+                                    <span class="badge bg-danger bg-opacity-10 text-danger border border-danger">⚠️ Expired</span>
+                                {% else %}
+                                    <span style="color: var(--text-slate);" class="fw-medium">{{ m.expiry_date|date:"M d, Y" }}</span>
+                                {% endif %}
+                            </td>
+                            <td><span class="fw-bold" style="color: var(--text-slate);">₹{{ m.unit_price }}</span></td>
+                            <td>
+                                {% if m.stock_available > 50 %}
+                                    <span class="badge bg-success-subtle text-success border border-success px-2 py-1.5">{{ m.stock_available }} units</span>
+                                {% elif m.stock_available > 10 %}
+                                    <span class="badge bg-warning-subtle text-warning border border-warning px-2 py-1.5">{{ m.stock_available }} units</span>
+                                {% else %}
+                                    <span class="badge bg-danger-subtle text-danger border border-danger animate-pulse px-2 py-1.5">{{ m.stock_available }} Low Stock</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                <div class="btn-group gap-2">
+                                    <a href="{% url 'pharmacy:medicine_edit' pk=m.pk %}" class="btn btn-sm btn-glass-secondary px-3" style="border-radius:6px !important;" title="Edit">✏️ Edit</a>
+                                    <a href="{% url 'pharmacy:medicine_sell' pk=m.pk %}" class="btn btn-sm btn-glass-success px-3" style="border-radius:6px !important;" title="Sell">💰 Sell</a>
+                                    <a href="{% url 'pharmacy:medicine_delete' pk=m.pk %}" class="btn btn-sm btn-outline-danger bg-white px-3" style="border-radius:6px !important;" title="Delete">🗑️ Delete</a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+
+                    <tr id="zeroMatchesRow" class="d-none">
+                        <td colspan="8" class="text-center py-5">
+                            <span class="fs-2">🔍</span>
+                            <p class="text-muted mb-0 mt-2 fw-semibold">No batch matching those evaluation parameters was found in current inventory buffers.</p>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="row g-4 mt-2">
+            <div class="col-md-3">
+                <div class="glass-panel text-center p-4">
+                    <h6 class="text-uppercase tracking-wider small" style="color: var(--text-muted); font-weight: 600;">Total Medicines</h6>
+                    <p class="mb-0 fw-bold fs-2" style="color: var(--med-primary);">{{ medicines|length }}</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="glass-panel text-center p-4">
+                    <h6 class="text-uppercase tracking-wider small" style="color: var(--text-muted); font-weight: 600;">Total Stock Value</h6>
+                    <p class="mb-0 fw-bold fs-2" style="color: var(--text-slate);">₹{{ total_value|default:"0.00" }}</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="glass-panel text-center p-4" style="border-color: rgba(245, 158, 11, 0.4);">
+                    <h6 class="text-uppercase tracking-wider small" style="color: var(--text-muted); font-weight: 600;">Low Stock Items</h6>
+                    <p class="mb-0 fw-bold fs-2 text-warning">{{ low_stock_count|default:"0" }}</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="glass-panel text-center p-4" style="border-color: rgba(239, 68, 68, 0.4);">
+                    <h6 class="text-uppercase tracking-wider small" style="color: var(--text-muted); font-weight: 600;">Expired Items</h6>
+                    <p class="mb-0 fw-bold fs-2 text-danger">{{ expired_count|default:"0" }}</p>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="glass-panel text-center p-5" role="alert">
+            <h3 class="text-muted fw-bold">No Medicines Found</h3>
+            <p style="color: var(--text-muted);">Your pharmacy inventory is completely empty. Start by inserting an initial product!</p>
+            <a href="{% url 'pharmacy:medicine_add' %}" class="btn btn-glass-success mt-3 px-4">➕ Add Your First Medicine</a>
+        </div>
+    {% endif %}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('medicineSearch');
+
+            if (searchInput) {
+                searchInput.addEventListener('input', function(event) {
+                    const query = event.target.value.toLowerCase().trim();
+                    const targetRows = document.querySelectorAll('.medicine-record-row');
+                    const zeroPlaceholder = document.getElementById('zeroMatchesRow');
+                    let displayCounter = 0;
+
+                    targetRows.forEach(row => {
+                        const medicineName = row.querySelector('.medicine-name-query').textContent.toLowerCase();
+                        const manufacturer = row.querySelector('.medicine-manufacturer-query').textContent.toLowerCase();
+
+                        // Triggers matched state on name string evaluation or manufacturer parameters
+                        if (medicineName.includes(query) || manufacturer.includes(query)) {
+                            row.classList.remove('d-none');
+                            displayCounter++;
+                        } else {
+                            row.classList.add('d-none');
+                        }
+                    });
+
+                    // Toggles explicit empty feedback card row
+                    if (displayCounter === 0 && query.length > 0) {
+                        zeroPlaceholder.classList.remove('d-none');
+                    } else {
+                        zeroPlaceholder.classList.add('d-none');
+                    }
+                });
+            }
+        });
+    </script>
+{% endblock %}

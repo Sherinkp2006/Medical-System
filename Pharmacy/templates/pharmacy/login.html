@@ -1,0 +1,81 @@
+{% extends "pharmacy/base.html" %}
+
+{% block title %}Login - Pharmacy Management{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Explicitly transitions to a deep dark backdrop for authentication security gates */
+    body {
+        background: radial-gradient(circle at 50% 50%, #03140f 0%, #010504 100%) !important;
+    }
+
+    /* Deep translucent dark-glass authorization panel container */
+    .dark-login-card {
+        background: rgba(10, 28, 22, 0.8) !important;
+        backdrop-filter: blur(25px) saturate(150%) !important;
+        -webkit-backdrop-filter: blur(25px) saturate(150%) !important;
+        border: 1px solid rgba(0, 255, 170, 0.25) !important;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6) !important;
+        border-radius: 24px !important;
+    }
+
+    /* Low-light input surfaces preventing visual blowout */
+    .dark-login-card .form-control {
+        background: rgba(0, 0, 0, 0.45) !important;
+        border: 1px solid rgba(0, 255, 170, 0.2) !important;
+        color: #ffffff !important;
+    }
+
+    .dark-login-card .form-control:focus {
+        background: rgba(0, 0, 0, 0.6) !important;
+        border-color: #00ffaa !important;
+        box-shadow: 0 0 15px rgba(0, 255, 170, 0.4) !important;
+    }
+
+    .dark-login-card .form-control::placeholder {
+        color: rgba(255, 255, 255, 0.3) !important;
+    }
+
+    /* High-contrast dark neon action controls */
+    .btn-dark-mint {
+        background: linear-gradient(135deg, rgba(0, 255, 170, 0.3), rgba(4, 78, 57, 0.6)) !important;
+        border: 1px solid #00ffaa !important;
+        color: #ffffff !important;
+        font-weight: 600;
+        border-radius: 12px;
+        transition: all 0.25s ease;
+    }
+
+    .btn-dark-mint:hover {
+        background: linear-gradient(135deg, rgba(0, 255, 170, 0.5), rgba(4, 78, 57, 0.8)) !important;
+        box-shadow: 0 0 20px rgba(0, 255, 170, 0.5) !important;
+        transform: translateY(-1px);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-5">
+            <div class="glass-panel dark-login-card p-5">
+                <h3 class="mb-4 fw-bold text-white text-center" style="letter-spacing: -0.5px;">🔐 User Login</h3>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="username" class="form-label text-white fw-semibold" style="opacity: 0.9;">Username</label>
+                        <input type="text" name="username" id="username" class="form-control" placeholder="Enter operator username" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="password" class="form-label text-white fw-semibold" style="opacity: 0.9;">Password</label>
+                        <input type="password" name="password" id="password" class="form-control" placeholder="Enter secure password" required>
+                    </div>
+                    <button type="submit" class="btn btn-dark-mint w-100 py-2.5 fs-5">Login</button>
+                </form>
+                <hr class="my-4" style="border-color: rgba(255,255,255,0.15);">
+                <p class="text-center mb-0" style="color: rgba(255,255,255,0.6);">
+                    Don't have an account? <a href="{% url 'pharmacy:register' %}" class="fw-bold" style="color: #00ffaa !important; text-decoration: none;">Register here</a>
+                </p>
+            </div>
+        </div>
+    </div>
+{% endblock %}
